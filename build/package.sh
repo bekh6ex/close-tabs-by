@@ -2,6 +2,8 @@
 
 NAME="close-tabs-by"
 
-VERSION=$(sed -nr 's/^.*"version".*([0-9]+\.[0-9]+\.[0-9]).*$/\1/p' manifest.json)
+VERSION=$(sed -nE 's/^.*"version"[[:space:]]*:[[:space:]]*"([^"]*).*$/\1/p' src/manifest.json)
 
-zip ../${NAME}-v${VERSION}.xpi * popup/*
+mkdir -p dist
+cd src
+zip ../dist/${NAME}-v${VERSION}.xpi * popup/*

@@ -1,6 +1,9 @@
 let closeWithSameDomainMenuItemId = 'close-tabs-with-same-domain'
 let closeWithSame2ndLevelDomainMenuItemId = 'close-tabs-with-same-2nd-level-domain'
 
+const TAB_SUBSET = {currentWindow: true, pinned: false}
+
+
 browser.contextMenus.create({
   id: closeWithSameDomainMenuItemId,
   title: 'Close tabs with the same domain',
@@ -19,9 +22,11 @@ async function closeTabsWithTheSameDomain (tab) {
     return
   }
 
-  const allTabs = await browser.tabs.query({currentWindow: true})
+  const allTabs = await browser.tabs.query(TAB_SUBSET)
 
-  const tabsToClose = allTabs.filter(t => extractDomain(t.url) === domain)
+  const tabsToClose = allTabs
+      .filter(t => !t.pinned)
+      .filter(t => extractDomain(t.url) === domain)
 
   tabsToClose.forEach(t => console.log(t.title))
 
@@ -39,7 +44,7 @@ async function closeTabsWithTheSame2ndLevelDomain (tab) {
   }
   const domain2lvl = domainTo2ndLevelDomain(domain)
 
-  const allTabs = await browser.tabs.query({currentWindow: true})
+  const allTabs = await browser.tabs.query(TAB_SUBSET)
 
   const tabsToClose = allTabs.filter(t => {
     let tabDomain = extractDomain(t.url)
@@ -55,7 +60,7 @@ async function closeTabsWithTheSame2ndLevelDomain (tab) {
 }
 
 function closeTabsByTitleContaining (needle) {
-  const allTabs = browser.tabs.query({currentWindow: true})
+  const allTabs = browser.tabs.query(TAB_SUBSET)
 
   allTabs.then(function (allTabs) {
 
@@ -88,31 +93,28 @@ browser.menus.onClicked.addListener((info, tab) => {
   }
 })
 
-if (browser.menus.onShown) {
+browser.menus.onShown.addListener(async function (info, tab) {
+  const domain = extractDomain(tab.url) || 'not-applicable.O_o'
+  if (!domain) {
+    return
+  }
 
-  browser.menus.onShown.addListener(async function (info, tab) {
-    const domain = extractDomain(tab.url) || 'not-applicable.O_o'
-    if (!domain) {
-      return
-    }
+  if (info.menuIds.indexOf(closeWithSameDomainMenuItemId) >= 0) {
+    browser.menus.update(closeWithSameDomainMenuItemId, {
+      title: `domain: ${domain}`,
+      enabled: true
+    })
+  }
 
-    if (info.menuIds.indexOf(closeWithSameDomainMenuItemId) >= 0) {
-      browser.menus.update(closeWithSameDomainMenuItemId, {
-        title: `domain: ${domain}`,
-        enabled: true
-      })
-    }
+  if (info.menuIds.indexOf(closeWithSame2ndLevelDomainMenuItemId) >= 0) {
+    const domain2lvl = domainTo2ndLevelDomain(domain)
+    browser.menus.update(closeWithSame2ndLevelDomainMenuItemId, {
+      title: `domain: *.${domain2lvl}`,
+      enabled: true
+    })
+  }
 
-    if (info.menuIds.indexOf(closeWithSame2ndLevelDomainMenuItemId) >= 0) {
-      const domain2lvl = domainTo2ndLevelDomain(domain)
-      browser.menus.update(closeWithSame2ndLevelDomainMenuItemId, {
-        title: `domain: *.${domain2lvl}`,
-        enabled: true
-      })
-    }
+  browser.menus.refresh()
 
-    browser.menus.refresh()
-
-  })
-}
+})
 
