@@ -1,0 +1,34 @@
+{
+  "name": "close-tabs-by",
+  "version": "1.0.0",
+  "description": "",
+  "targets": {
+    "default": {
+      "source": "src/manifest.json",
+      "optimize": false,
+      "sourceMap": {
+        "inline": true,
+        "inlineSources": true
+      }
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "pnpm run clean && parcel build",
+    "clean": "rm -rf dist/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bekh6ex/close-tabs-by.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bekh6ex/close-tabs-by/issues"
+  },
+  "homepage": "https://github.com/bekh6ex/close-tabs-by#readme",
+  "devDependencies": {
+    "@parcel/config-webextension": "^2.2.1",
+    "parcel": "^2.2.1"
+  }
+}
